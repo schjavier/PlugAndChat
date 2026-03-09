@@ -1,6 +1,6 @@
 CREATE TABLE guest (
-    id VARCHAR(50) NOT NULL PRIMARY KEY ,
-    tenant_id VARCHAR(50) NOT NULL ,
+    id BINARY(16) NOT NULL PRIMARY KEY ,
+    tenant_id BINARY(16) NOT NULL ,
     name VARCHAR(50) NOT NULL ,
     email VARCHAR(50),
     deleted_at TIMESTAMP DEFAULT NULL,
