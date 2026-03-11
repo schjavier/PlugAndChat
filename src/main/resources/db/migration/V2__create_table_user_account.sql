@@ -1,6 +1,6 @@
 CREATE TABLE user_account (
-    id varchar(50) NOT NULL PRIMARY KEY,
-    tenant_id varchar(50) NOT NULL,
+    id BINARY(16) NOT NULL PRIMARY KEY,
+    tenant_id BINARY(16) NOT NULL,
     email varchar(50),
     role varchar(20),
     is_locked boolean,

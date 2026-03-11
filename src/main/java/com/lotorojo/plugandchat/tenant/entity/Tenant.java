@@ -1,12 +1,8 @@
 package com.lotorojo.plugandchat.tenant.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -14,24 +10,20 @@ import java.util.UUID;
 @Table(name="tenant")
 @Getter
 @Setter
-@EqualsAndHashCode(of="uuid")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Tenant {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID uuid;
 
     private String name;
     private String api_key;
 
-
-    public Tenant(String name, String api_key) {
-        this.uuid = UUID.randomUUID();
+    public Tenant(String name, String api_key){
         this.name = name;
         this.api_key = api_key;
     }
-
-    public Tenant() {
-    }
-
-
 }

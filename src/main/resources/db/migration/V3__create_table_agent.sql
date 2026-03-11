@@ -1,6 +1,6 @@
 CREATE TABLE agent (
-    id VARCHAR(50) PRIMARY KEY NOT NULL,
-    user_id VARCHAR(50) NOT NULL ,
+    id BINARY(16) PRIMARY KEY NOT NULL,
+    user_id BINARY(16) NOT NULL ,
     department VARCHAR(50) ,
     display_name VARCHAR(50) NOT NULL UNIQUE,
     deleted_at TIMESTAMP DEFAULT NULL,

@@ -1,8 +1,8 @@
 CREATE TABLE message (
-    id VARCHAR(50) NOT NULL PRIMARY KEY,
-    room_id VARCHAR(50) NOT NULL ,
-    sender_agent_id VARCHAR(50),
-    sender_guest_id VARCHAR(50),
+    id BINARY(16) NOT NULL PRIMARY KEY,
+    room_id BINARY(16) NOT NULL ,
+    sender_agent_id BINARY(16),
+    sender_guest_id BINARY(16),
     content TEXT NOT NULL ,
     send_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

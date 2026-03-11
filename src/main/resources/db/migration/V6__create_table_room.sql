@@ -1,8 +1,8 @@
 CREATE TABLE room (
-    id varchar(50) NOT NULL PRIMARY KEY ,
-    tenant_id varchar(50) NOT NULL ,
-    guest_id varchar(50) NOT NULL ,
-    agent_id varchar(50),
+    id BINARY(16) NOT NULL PRIMARY KEY ,
+    tenant_id BINARY(16) NOT NULL ,
+    guest_id BINARY(16) NOT NULL ,
+    agent_id BINARY(16),
     status varchar(50) NOT NULL ,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     closed_at TIMESTAMP ,
