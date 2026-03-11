@@ -1,5 +1,6 @@
 package com.lotorojo.plugandchat.tenant.controller;
 
+import com.lotorojo.plugandchat.tenant.dto.CreateTenantRequest;
 import com.lotorojo.plugandchat.tenant.dto.TenantResponse;
 import com.lotorojo.plugandchat.tenant.entity.Tenant;
 import com.lotorojo.plugandchat.tenant.mapper.TenantMapper;
@@ -22,9 +23,9 @@ public class TenantController {
     }
 
     @PostMapping("/tenant")
-    public ResponseEntity<TenantResponse> createTenant(@RequestBody String name){
+    public ResponseEntity<TenantResponse> createTenant(@RequestBody CreateTenantRequest createTenantRequest){
 
-        TenantResponse tenantResponse = tenantMapper.toDto(tenantService.createTenant(name));
+        TenantResponse tenantResponse = tenantMapper.toDto(tenantService.createTenant(createTenantRequest.name()));
 
         return new ResponseEntity<>(tenantResponse, HttpStatus.CREATED);
 
