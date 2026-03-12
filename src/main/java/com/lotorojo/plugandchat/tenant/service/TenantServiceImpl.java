@@ -31,7 +31,10 @@ public class TenantServiceImpl implements TenantService{
     }
 
     @Override
-    public boolean deleteTenant(UUID id) {
-        return false;
+    public void deleteTenant(UUID id) {
+
+        Tenant tenant = tenantValidations.getTenantOrThrow(id);
+        tenantRepository.delete(tenant);
+
     }
 }
