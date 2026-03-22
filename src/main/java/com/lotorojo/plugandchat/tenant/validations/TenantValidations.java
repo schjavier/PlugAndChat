@@ -1,8 +1,12 @@
 package com.lotorojo.plugandchat.tenant.validations;
 
 import com.lotorojo.plugandchat.core.exception.DuplicateNameException;
+import com.lotorojo.plugandchat.core.exception.NonExistingTenantException;
+import com.lotorojo.plugandchat.tenant.entity.Tenant;
 import com.lotorojo.plugandchat.tenant.repository.TenantRepository;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 public class TenantValidations {

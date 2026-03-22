@@ -22,4 +22,15 @@ public class GlobalExceptionHandler {
         return problemDetail;
 }
 
+@ExceptionHandler(NonExistingTenantException.class)
+    public ProblemDetail handleNonExistingTenantException(NonExistingTenantException ex){
+
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    problemDetail.setType(URI.create("path-to-domunetation"));
+    problemDetail.setTitle("Non Existing Tenant");
+    problemDetail.setProperty("timestamp", Instant.now());
+
+    return problemDetail;
+}
+
 }
