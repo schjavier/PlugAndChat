@@ -26,10 +26,4 @@ public class TenantValidations {
 
     }
 
-    public Tenant getTenantOrThrow(UUID id) {
-
-        return tenantRepository.findById(id)
-                .orElseThrow(()-> new NonExistingTenantException("El Tenant con el ID: " + id + " no existe"));
-
-    }
 }

@@ -33,7 +33,7 @@ public class TenantServiceImpl implements TenantService{
     @Override
     public void deleteTenant(UUID id) {
 
-        Tenant tenant = tenantValidations.getTenantOrThrow(id);
+        Tenant tenant = tenantRepository.getTenantOrThrow(id);
         tenantRepository.delete(tenant);
 
     }
