@@ -10,6 +10,8 @@ import com.lotorojo.plugandchat.tenant.service.TenantService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class UserAccountServiceImpl implements UserAccountService{
 
@@ -34,5 +36,10 @@ public class UserAccountServiceImpl implements UserAccountService{
         UserAccount userAccount = userAccountMapper.toEntity(data, tenant);
 
         return userAccountRepository.save(userAccount);
+    }
+
+    @Override
+    public UserAccount getUserAccount(UUID accountId) {
+        return userAccountRepository.getUserAccountOrThrow(accountId);
     }
 }

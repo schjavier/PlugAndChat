@@ -1,8 +1,11 @@
 package com.lotorojo.plugandchat.tenant.service;
 
+import com.lotorojo.plugandchat.identity.dto.CreateCredentialDTO;
 import com.lotorojo.plugandchat.identity.dto.CreateUserAccountDTO;
+import com.lotorojo.plugandchat.identity.entity.Credential;
 import com.lotorojo.plugandchat.identity.entity.Role;
 import com.lotorojo.plugandchat.identity.entity.UserAccount;
+import com.lotorojo.plugandchat.identity.service.CredentialService;
 import com.lotorojo.plugandchat.identity.service.UserAccountService;
 import com.lotorojo.plugandchat.tenant.dto.CreateTenantRequest;
 import com.lotorojo.plugandchat.tenant.dto.TenantResponse;
@@ -23,12 +26,14 @@ public class TenantServiceImpl implements TenantService{
     private final TenantValidations tenantValidations;
     private final UserAccountService userAccountService;
     private final TenantMapper tenantMapper;
+    private final CredentialService credentialService;
 
-    public TenantServiceImpl(TenantRepository tenantRepository, TenantValidations tenantValidations, UserAccountService userAccountService, TenantMapper tenantMapper){
+    public TenantServiceImpl(TenantRepository tenantRepository, TenantValidations tenantValidations, UserAccountService userAccountService, TenantMapper tenantMapper, CredentialService credentialService){
         this.tenantRepository = tenantRepository;
         this.tenantValidations = tenantValidations;
         this.userAccountService = userAccountService;
         this.tenantMapper = tenantMapper;
+        this.credentialService = credentialService;
     }
 
     @Override
@@ -70,7 +75,13 @@ public class TenantServiceImpl implements TenantService{
 
         UserAccount admin = userAccountService.createUserAccount(adminDto);
 
-//        TODO: Call credential service
+        CreateCredentialDTO credentialDTO = new CreateCredentialDTO(
+                admin.getUuid(),
+                request.adminPassword(),
+                "DEFAULT"
+        );
+
+        credentialService.createCredential(credentialDTO);
 
         return tenantMapper.toDto(tenant);
     }
