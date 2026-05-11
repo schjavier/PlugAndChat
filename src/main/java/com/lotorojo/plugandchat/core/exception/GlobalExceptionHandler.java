@@ -1,5 +1,7 @@
 package com.lotorojo.plugandchat.core.exception;
 
+import io.jsonwebtoken.JwtException;
+import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,6 +33,32 @@ public class GlobalExceptionHandler {
     problemDetail.setProperty("timestamp", Instant.now());
 
     return problemDetail;
+}
+
+@ExceptionHandler(io.jsonwebtoken.JwtException.class)
+public ProblemDetail handleJwtException(JwtException ex){
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Token Invalido o Expirado");
+    problemDetail.setTitle("Authentication Error");
+    problemDetail.setProperty("timestamp", Instant.now());
+    return problemDetail;
+}
+
+@ExceptionHandler(IllegalArgumentException.class)
+public ProblemDetail handleIllegalArgumentException(IllegalArgumentException ex){
+    String detail = ex.getMessage().contains("UUID") ? "Tenant ID invalido" : ex.getMessage();
+
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+    problemDetail.setTitle("Error de Formato");
+    problemDetail.setProperty("timestamp", Instant.now());
+    return problemDetail;
+}
+
+@ExceptionHandler(AuthenticationException.class)
+    public ProblemDetail handleAuthenticationException(AuthenticationException ex){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problemDetail.setTitle("Authentication Error");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
 }
 
 }

@@ -19,7 +19,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           TenantFilter tenantFilter) throws Exception{
+                                           JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception{
         http
                 .cors(cors -> cors.configure(http))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -30,7 +30,7 @@ public class SecurityConfig {
                 );
 
 
-        http.addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
 
