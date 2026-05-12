@@ -18,12 +18,13 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${SECRET_KEY_STRING}")
-    private String SECRET_KEY_STRING;
 
     private final Date expiration = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 6);
+    private final SecretKey secretKey;
 
-    private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
+    public JwtService(@Value("${jwt.token.secret}")  String secret) {
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String generateToken(UserDetails userDetails, UUID tenantId) {
         Map<String, Object> extraClaims = new HashMap<>();
