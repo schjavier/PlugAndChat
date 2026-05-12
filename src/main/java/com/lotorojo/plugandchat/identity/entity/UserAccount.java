@@ -30,12 +30,21 @@ public class UserAccount {
     private Tenant tenant;
 
     private String email;
-    private String role;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     private boolean isLocked;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
 
+    public UserAccount(Tenant tenant, String email, Role role, boolean isLocked){
+        this.tenant = tenant;
+        this.email = email;
+        this.role = role;
+        this.isLocked = isLocked;
+    }
 }
 

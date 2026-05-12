@@ -25,8 +25,15 @@ public class Credential {
     @JoinColumn(name = "user_id")
     private UserAccount userAccount;
 
-    private String password_hash;
-    private String provider;
+    private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
 
 
+    public Credential(UserAccount userAccount, String passwordHash, String provider) {
+        this.userAccount = userAccount;
+        this.passwordHash = passwordHash;
+        this.provider = AuthProvider.valueOf(provider);
+    }
 }
