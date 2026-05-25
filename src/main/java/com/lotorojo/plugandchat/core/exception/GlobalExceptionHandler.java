@@ -61,4 +61,13 @@ public ProblemDetail handleIllegalArgumentException(IllegalArgumentException ex)
         return problemDetail;
 }
 
+@ExceptionHandler(DuplicateAgentException.class)
+    public ProblemDetail handleDuplicateAgentException(DuplicateAgentException ex){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problemDetail.setTitle("Duplicate Agent");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
 }
+
+}
+

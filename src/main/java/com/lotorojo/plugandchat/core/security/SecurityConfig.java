@@ -2,6 +2,7 @@ package com.lotorojo.plugandchat.core.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -25,8 +26,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configure(http))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                                auth.requestMatchers("/chat/**", "/tenant", "/login")
-                                        .permitAll()
+                                auth.requestMatchers("/chat/**", "/tenant", "/login").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/agents").hasRole("ADMIN")
                                         .anyRequest().authenticated()
                 );
 
