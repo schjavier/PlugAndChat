@@ -41,9 +41,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             processAuthentication(request);
-            filterChain.doFilter(request, response);
+
         } catch (Exception ex) {
             handlerExceptionResolver.resolveException(request, response, null, ex);
+            return;
+        }
+
+        try{
+            filterChain.doFilter(request, response);
         } finally {
             TenantContext.clear();
         }
