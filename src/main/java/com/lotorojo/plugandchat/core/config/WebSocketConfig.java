@@ -1,10 +1,12 @@
 package com.lotorojo.plugandchat.core.config;
 
 
+import com.lotorojo.plugandchat.core.security.WebSocketJwtInterceptor;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -15,6 +17,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
+
+    private final WebSocketJwtInterceptor webSocketJwtInterceptor;
+
+    public WebSocketConfig(WebSocketJwtInterceptor webSocketJwtInterceptor) {
+        this.webSocketJwtInterceptor = webSocketJwtInterceptor;
+    }
 
     @PostConstruct
     public void init(){
@@ -32,5 +40,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         //Endpoint de entrada, por ahora todos los origins son soportados, despues deberemos modificar eso
         registry.addEndpoint("/chat").setAllowedOrigins("*");
 
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(webSocketJwtInterceptor);
     }
 }
