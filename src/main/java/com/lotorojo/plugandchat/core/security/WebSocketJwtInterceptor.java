@@ -33,38 +33,32 @@ public class WebSocketJwtInterceptor implements ChannelInterceptor {
 
         StompHeaderAccessor accessor = StompHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-        if (!verifyAccessor(accessor)) {
+        if (!verifyAccessor(accessor) || accessor.getCommand() == null) {
             return ChannelInterceptor.super.preSend(message, channel);
         }
 
-        StompCommand command = accessor.getCommand();
-
-        if (StompCommand.CONNECT.equals(command)) {
-            handleConnectInterceptor(accessor);
-        } else {
-            handleSubsequentRequestInterceptor(accessor);
+        switch (accessor.getCommand()) {
+            case CONNECT -> handleConnectInterceptor(accessor);
+            case SUBSCRIBE, SEND -> {
+                handleSubsequentRequestInterceptor(accessor);
+                validateDestinationTenant(accessor);
+            }
+            default -> handleSubsequentRequestInterceptor(accessor);
         }
+
         return ChannelInterceptor.super.preSend(message, channel);
+
     }
+
+
 
     @Override
     public void afterSendCompletion(Message<?> message, MessageChannel channel, boolean sent, @Nullable Exception ex) {
         TenantContext.clear();
     }
 
-    private boolean verifyAccessor(StompHeaderAccessor accessor) {
-       return (accessor != null);
-    }
+    // private utility methods
 
-    private String getToken(StompHeaderAccessor accessor) {
-        String authHeader = accessor.getFirstNativeHeader("Authorization");
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
-        } else {
-            throw new BadCredentialsException("Invalid Authorization header");
-        }
-    }
 
     private void handleConnectInterceptor(StompHeaderAccessor accessor) {
             String token = getToken(accessor);
@@ -98,6 +92,56 @@ public class WebSocketJwtInterceptor implements ChannelInterceptor {
                 }
             }
         }
+
+    private void validateDestinationTenant(StompHeaderAccessor accessor) {
+        String destination = accessor.getDestination();
+
+        if (destination == null) {
+            return;
+        }
+
+        UUID userTenantId = null;
+        if (verifySessionAttributes(accessor)) {
+            userTenantId = (UUID) accessor.getSessionAttributes().get("tenantId");
+        }
+
+        if (userTenantId == null) {
+            throw new BadCredentialsException("Access denied");
+        }
+
+        String[] parts = destination.split("/");
+        if (parts.length > 3 && "tenants".equals(parts[2])){
+            try {
+                UUID destinationTenantId = UUID.fromString(parts[3]);
+                compareTenantIds(userTenantId, destinationTenantId);
+            } catch (IllegalArgumentException e) {
+                throw new BadCredentialsException("Access denied: Invalid destination tenant");
+            }
+        } else {
+            throw new BadCredentialsException("Access denied: Destination doesn't comply with expected structure");
+        }
+
+    }
+
+    private void compareTenantIds(UUID userTenantId, UUID destinationTenantId) {
+            if (!destinationTenantId.equals(userTenantId)) {
+                throw new BadCredentialsException("Access denied: Destination Tenant mismatch");
+            }
+    }
+
+    private boolean verifyAccessor(StompHeaderAccessor accessor) {
+        return (accessor != null);
+    }
+
+    private String getToken(StompHeaderAccessor accessor) {
+        String authHeader = accessor.getFirstNativeHeader("Authorization");
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        } else {
+            throw new BadCredentialsException("Invalid Authorization header");
+        }
+    }
 
     private boolean verifySessionAttributes(StompHeaderAccessor accessor) {
         return accessor.getSessionAttributes() != null;
