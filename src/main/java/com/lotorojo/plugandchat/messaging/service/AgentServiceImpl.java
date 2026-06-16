@@ -71,5 +71,10 @@ public class AgentServiceImpl implements AgentService {
 
         return agentMapper.toDto(savedAgent);
     }
+
+    @Override
+    public Agent getAgent(UUID agentId) {
+        return agentRepository.getAgentOrThrow(agentId);
+    }
 }
 

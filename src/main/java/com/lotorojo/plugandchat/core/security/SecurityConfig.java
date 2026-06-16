@@ -26,7 +26,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configure(http))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                                auth.requestMatchers("/chat/**", "/tenant", "/login").permitAll()
+                        auth.requestMatchers(HttpMethod.POST, "/rooms").permitAll()
+                                .requestMatchers("/chat/**", "/tenant", "/login").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/agents").hasRole("ADMIN")
                                         .anyRequest().authenticated()
                 );
