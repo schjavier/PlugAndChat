@@ -26,6 +26,21 @@ public class JwtService {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
+    public String generateGuestToken(String email, UUID tenantId) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("tenantId", tenantId.toString());
+        extraClaims.put("role", "GUEST");
+
+        return Jwts.builder()
+                .claims(extraClaims)
+                .subject(email)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(expiration)
+                .signWith(secretKey)
+                .compact();
+
+    }
+
     public String generateToken(UserDetails userDetails, UUID tenantId) {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("tenantId", tenantId.toString());
@@ -37,6 +52,10 @@ public class JwtService {
                 .expiration(expiration)
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     public String extractUsername(String token) {
@@ -51,6 +70,10 @@ public class JwtService {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
+    }
+
+    public boolean isTokenValid(String token) {
+        return !isTokenExpired(token);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

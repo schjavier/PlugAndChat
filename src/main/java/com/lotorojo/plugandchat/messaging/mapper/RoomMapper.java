@@ -7,7 +7,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class RoomMapper {
 
-    public RoomResponse toDto(Room room) {
+    public RoomResponse toDto(Room room){
+        return toDto(room, null);
+    };
+
+    public RoomResponse toDto(Room room, String token) {
         return new RoomResponse(
                 room.getUuid(),
                 room.getTenant().getUuid(),
@@ -16,7 +20,8 @@ public class RoomMapper {
                 room.getAgent() != null ? room.getAgent().getUuid() : null,
                 room.getStatus(),
                 room.getCreatedAt(),
-                room.getClosedAt()
+                room.getClosedAt(),
+                token
         );
     }
 

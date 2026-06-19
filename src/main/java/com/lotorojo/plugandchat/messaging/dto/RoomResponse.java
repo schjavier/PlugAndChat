@@ -13,7 +13,8 @@ public record RoomResponse(
         UUID agentId,
         RoomStatus status,
         LocalDateTime createdAt,
-        LocalDateTime closedAt
+        LocalDateTime closedAt,
+        String token
 
 ) {
 }

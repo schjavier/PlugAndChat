@@ -1,5 +1,6 @@
 package com.lotorojo.plugandchat.messaging.controller;
 
+import com.lotorojo.plugandchat.core.security.JwtService;
 import com.lotorojo.plugandchat.messaging.dto.AssignAgentRequest;
 import com.lotorojo.plugandchat.messaging.dto.CreateRoomRequest;
 import com.lotorojo.plugandchat.messaging.dto.RoomResponse;
@@ -18,16 +19,19 @@ public class RoomController {
 
     private final RoomService roomService;
     private final RoomMapper roomMapper;
+    private final JwtService  jwtService;
 
-    public RoomController(RoomService roomService, RoomMapper roomMapper){
+    public RoomController(RoomService roomService, RoomMapper roomMapper,  JwtService jwtService) {
         this.roomService = roomService;
         this.roomMapper = roomMapper;
+        this.jwtService = jwtService;
     }
 
     @PostMapping()
     public ResponseEntity<RoomResponse> createRoom(@RequestBody CreateRoomRequest request){
         Room room = roomService.createRoom(request);
-        return new ResponseEntity<>(roomMapper.toDto(room), HttpStatus.CREATED);
+        String token = jwtService.generateGuestToken(room.getGuest().getEmail(), room.getTenant().getUuid());
+        return new ResponseEntity<>(roomMapper.toDto(room, token), HttpStatus.CREATED);
 
     }
 

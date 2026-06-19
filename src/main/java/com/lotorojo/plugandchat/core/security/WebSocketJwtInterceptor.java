@@ -12,9 +12,11 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -67,15 +69,26 @@ public class WebSocketJwtInterceptor implements ChannelInterceptor {
             TenantContext.setCurrentTenant(tenantId);
 
             String username = jwtService.extractUsername(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            String role = jwtService.extractRole(token);
 
-            if(!jwtService.isTokenValid(token, userDetails)){
-                throw new BadCredentialsException("Invalid token");
+            UsernamePasswordAuthenticationToken autheticatedUser;
+
+            if("GUEST".equals(role)) {
+                if(!jwtService.isTokenValid(token)) {
+                    throw new BadCredentialsException("Invalid guest token");
+                }
+                autheticatedUser = new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority("ROLE_GUEST")));
+            }else {
+
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if(!jwtService.isTokenValid(token, userDetails)){
+                    throw new BadCredentialsException("Invalid token");
+                }
+
+                autheticatedUser =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
             }
-
-            UsernamePasswordAuthenticationToken autheticatedUser =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
 
             accessor.setUser(autheticatedUser);
 
