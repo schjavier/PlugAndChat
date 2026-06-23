@@ -10,5 +10,6 @@ public interface AgentService {
 
     AgentResponse registerAgent(RegisterAgentRequest registerAgentRequest);
     Agent getAgent(UUID agentId);
+    Agent getByUserAccountEmail(String email);
 }
 

@@ -70,4 +70,9 @@ public class RoomServiceImpl implements RoomService {
         return roomRepository.save(room);
 
     }
+
+    @Override
+    public Room getRoomById(UUID roomId) {
+        return roomRepository.getRoomOrThrow(roomId);
+    }
 }

@@ -5,7 +5,10 @@ import com.lotorojo.plugandchat.messaging.entity.Room;
 import com.lotorojo.plugandchat.messaging.repository.GuestRepository;
 import com.lotorojo.plugandchat.tenant.entity.Tenant;
 import jakarta.transaction.Transactional;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class GuestServiceImpl implements GuestService {
@@ -26,5 +29,10 @@ public class GuestServiceImpl implements GuestService {
                 }
         );
 
+    }
+
+    @Override
+    public Guest getGuestByEmailAndTenant(String email, UUID tenantId) {
+        return guestRepository.findByEmailAndTenantUuid(email, tenantId).orElseThrow(()-> new BadCredentialsException("Guest not found"));
     }
 }

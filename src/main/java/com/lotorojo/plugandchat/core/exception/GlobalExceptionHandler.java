@@ -68,13 +68,20 @@ public ProblemDetail handleNoUserAccountFoundException(NoUserAccountFoundExcepti
     return problemDetail;
 }
 
-
 @ExceptionHandler(DuplicateAgentException.class)
     public ProblemDetail handleDuplicateAgentException(DuplicateAgentException ex){
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problemDetail.setTitle("Duplicate Agent");
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
+}
+
+@ExceptionHandler(IllegalStateException.class)
+    public ProblemDetail handleIllegalStateException(IllegalStateException ex){
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    problemDetail.setTitle("Illegal State");
+    problemDetail.setProperty("timestamp", Instant.now());
+    return problemDetail;
 }
 
 }

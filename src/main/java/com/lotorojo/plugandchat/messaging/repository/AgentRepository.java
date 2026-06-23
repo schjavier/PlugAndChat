@@ -14,5 +14,7 @@ public interface AgentRepository extends JpaRepository<Agent, UUID> {
     }
 
     Optional<Agent> findByUserAccountUuid(UUID userAccountUuid);
+    Optional<Agent> findByUserAccountEmail(String email);
+
 }
 

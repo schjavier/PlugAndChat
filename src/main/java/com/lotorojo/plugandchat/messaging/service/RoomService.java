@@ -11,4 +11,5 @@ public interface RoomService {
     Room createRoom(CreateRoomRequest createRoomRequest);
     Room assignAgentToRoom(AssignAgentRequest assignAgentRequest);
     Room closeRoom(UUID roomId);
+    Room getRoomById(UUID roomId);
 }
