@@ -7,11 +7,13 @@ import com.lotorojo.plugandchat.messaging.entity.Room;
 import com.lotorojo.plugandchat.messaging.repository.MessageRepository;
 import com.lotorojo.plugandchat.messaging.validations.MessagingValidations;
 import jakarta.transaction.Transactional;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -68,6 +70,27 @@ public class MessageServiceImpl implements MessageService {
 
         return messageRepository.save(message);
 
+    }
+
+    @Override
+    public List<Message> getMessageByRoom(UUID roomId, Principal principal) {
+        Room room = roomService.getRoomById(roomId);
+        UsernamePasswordAuthenticationToken auth = (UsernamePasswordAuthenticationToken) principal;
+
+        if (isGuest(auth)) {
+            String guestEmail = auth.getName();
+            if (!room.getGuest().getEmail().equals(guestEmail)) {
+                throw new BadCredentialsException("Guest is not the owner of the room");
+            }
+        } else {
+            String agentEmail = auth.getName();
+            Agent agent = agentService.getByUserAccountEmail(agentEmail);
+
+            messagingValidations.agentTenantMatch(room, agent);
+
+        }
+
+        return messageRepository.findByRoomUuidOrderBySendDateAsc(roomId);
     }
 
     private boolean isGuest(UsernamePasswordAuthenticationToken auth) {
