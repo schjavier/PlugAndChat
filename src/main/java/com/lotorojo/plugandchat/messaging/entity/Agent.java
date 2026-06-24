@@ -24,6 +24,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Agent {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
@@ -39,5 +40,10 @@ public class Agent {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    public Agent(UserAccount userAccount, String department, String displayName) {
+        this.userAccount = userAccount;
+        this.department = department;
+        this.displayName = displayName;
+    }
 
 }

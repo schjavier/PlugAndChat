@@ -39,11 +39,19 @@ public class Room {
     @JoinColumn(name = "agent_id")
     private Agent agent;
 
-    private String Status; // todo convert to enum later
+    @Enumerated(EnumType.STRING)
+    private RoomStatus status;
+
     private LocalDateTime createdAt;
     private LocalDateTime closedAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    public Room(Tenant currentTenant, Guest knownGuest, RoomStatus roomStatus, LocalDateTime now) {
+        this.tenant = currentTenant;
+        this.guest = knownGuest;
+        this.status = roomStatus;
+        this.createdAt = now;
+    }
 }

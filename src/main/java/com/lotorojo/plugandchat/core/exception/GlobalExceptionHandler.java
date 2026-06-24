@@ -1,7 +1,7 @@
 package com.lotorojo.plugandchat.core.exception;
 
 import io.jsonwebtoken.JwtException;
-import org.apache.tomcat.websocket.AuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -60,5 +60,29 @@ public ProblemDetail handleIllegalArgumentException(IllegalArgumentException ex)
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
 }
+@ExceptionHandler(NoUserAccountFoundException.class)
+public ProblemDetail handleNoUserAccountFoundException(NoUserAccountFoundException ex){
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    problemDetail.setTitle("Authentication Error");
+    problemDetail.setProperty("timestamp", Instant.now());
+    return problemDetail;
+}
+
+@ExceptionHandler(DuplicateAgentException.class)
+    public ProblemDetail handleDuplicateAgentException(DuplicateAgentException ex){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problemDetail.setTitle("Duplicate Agent");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+}
+
+@ExceptionHandler(IllegalStateException.class)
+    public ProblemDetail handleIllegalStateException(IllegalStateException ex){
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    problemDetail.setTitle("Illegal State");
+    problemDetail.setProperty("timestamp", Instant.now());
+    return problemDetail;
+}
 
 }
+

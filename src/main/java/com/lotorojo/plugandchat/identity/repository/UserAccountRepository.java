@@ -12,9 +12,10 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID> 
         return findById(uuid).orElseThrow(
                 () -> new NoUserAccountFoundException("La Cuenta de Usuario con el ID: " + uuid + " no se encuentra")
         );
-
-
     }
 
     Optional<UserAccount> findByEmailAndUuid(String email, UUID tenanUuid);
+
+    boolean existsByEmailAndTenantUuid(String email, UUID tenantUuid);
 }
+

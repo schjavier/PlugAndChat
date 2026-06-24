@@ -2,6 +2,7 @@ package com.lotorojo.plugandchat.core.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -13,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -25,8 +29,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configure(http))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
-                                auth.requestMatchers("/chat/**", "/tenant", "/login")
-                                        .permitAll()
+                        auth.requestMatchers(HttpMethod.POST, "/rooms").permitAll()
+                                .requestMatchers("/chat/**", "/tenant", "/login").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/agents").hasRole("ADMIN")
                                         .anyRequest().authenticated()
                 );
 
@@ -53,5 +58,21 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
 
     }
+
+    //solo para pruebas! 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+
 
 }

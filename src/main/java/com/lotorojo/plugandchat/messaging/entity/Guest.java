@@ -38,6 +38,13 @@ public class Guest {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    public Guest(Tenant tenant, String name, String email) {
+        this.tenant = tenant;
+        this.name = name;
+        this.email = email;
+
+    }
+
 }
 
 
