@@ -11,13 +11,14 @@ import java.util.UUID;
 
 @Entity
 @Table(name="user_account")
-@SQLDelete(sql = "UPDATE plug_and_chat.user_account set deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(sql = "UPDATE user_account set deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder(toBuilder = true)
 public class UserAccount {
 
     @Id

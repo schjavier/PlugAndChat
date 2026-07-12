@@ -1,6 +1,7 @@
 package com.lotorojo.plugandchat.messaging.controller;
 
 
+import com.lotorojo.plugandchat.TestDataFactory;
 import com.lotorojo.plugandchat.core.security.JwtService;
 import com.lotorojo.plugandchat.identity.entity.Credential;
 import com.lotorojo.plugandchat.identity.entity.Role;
@@ -76,23 +77,46 @@ public class RoomControllerIntegrationTest {
     @BeforeEach
     public void setup() {
 
-        this.testTenant = new Tenant("testTenant", "Api_key");
+        this.testTenant = TestDataFactory.newTenantRequest();
         this.tenantRepository.save(testTenant);
 
-        this.createRoomRequest = new CreateRoomRequest("Javier", "example@gmail.com");
-        this.testGuest = new Guest(testTenant, "Saverio", "Test123@mail.com");
+        this.createRoomRequest = new CreateRoomRequest("Test Guest", "test@guest.com");
+
+        this.testGuest = TestDataFactory.defaultGuest()
+                .toBuilder()
+                .uuid(null)
+                .tenant(testTenant)
+                .build();
         this.guestRepository.save(testGuest);
 
-        this.testRoom = new Room(testTenant, testGuest, RoomStatus.WAITING, LocalDateTime.now());
+        this.testRoom = TestDataFactory.defaultRoom()
+                .toBuilder()
+                .uuid(null)
+                .tenant(testTenant)
+                .guest(testGuest)
+                .build();
         this.roomRepository.save(this.testRoom);
 
-        testUserAccount = new UserAccount(testTenant, "agente@prueba.com", Role.AGENT, false);
+        testUserAccount = TestDataFactory.defaultUserAccount()
+                .toBuilder()
+                .uuid(null)
+                .tenant(testTenant)
+                .build();
         userAccountRepository.save(testUserAccount);
 
-        this.testAgent = new Agent(testUserAccount, "ventas", "Agente Ventas");
+        this.testAgent = TestDataFactory
+                .defaultAgent()
+                .toBuilder()
+                .uuid(null)
+                .userAccount(testUserAccount)
+                .build();
         agentRepository.save(this.testAgent);
 
-        this.testCredential = new Credential(testUserAccount, "FakePasswordHash", "DEFAULT");
+        this.testCredential = TestDataFactory.defaultCredential()
+                .toBuilder()
+                .id(null)
+                .userAccount(testUserAccount)
+                .build();
         this.credentialRepository.save(testCredential);
 
         this.testAssignAgentRequest = new AssignAgentRequest(testRoom.getUuid(), testAgent.getUuid());
@@ -106,8 +130,6 @@ public class RoomControllerIntegrationTest {
         this.token = jwtService.generateToken(testUserDetails, testTenant.getUuid());
     }
 
-
-
     @Test
     public void shouldCreateRoomSuccessfully() throws Exception {
 
@@ -118,7 +140,7 @@ public class RoomControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.uuid", notNullValue()))
                 .andExpect(jsonPath("$.tenantId", is(testTenant.getUuid().toString())))
-                .andExpect(jsonPath("$.guestName", is("Javier")))
+                .andExpect(jsonPath("$.guestName", is("Test Guest")))
                 .andExpect(jsonPath("$.token",  notNullValue()))
                 .andExpect(jsonPath("$.status", is("WAITING")));
 
@@ -142,8 +164,6 @@ public class RoomControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createRoomRequest)))
                 .andExpect(status().isBadRequest());
-
-
     }
 
     @Test
@@ -156,8 +176,6 @@ public class RoomControllerIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title", is("Error de Formato")))
                 .andExpect(jsonPath("$.detail", is("Tenant ID invalido")));
-
-
     }
 
     @Test
@@ -172,7 +190,7 @@ public class RoomControllerIntegrationTest {
                 .andExpect(jsonPath("$.uuid", notNullValue()))
                 .andExpect(jsonPath("$.tenantId", is(testTenant.getUuid().toString())))
                 .andExpect(jsonPath("$.guestId", is(testGuest.getUuid().toString())))
-                .andExpect(jsonPath("$.guestName", is("Saverio")))
+                .andExpect(jsonPath("$.guestName", is("Test Guest")))
                 .andExpect(jsonPath("$.agentId", is(testAgent.getUuid().toString())))
                 .andExpect(jsonPath("$.status", is(RoomStatus.ACTIVE.name())))
                 .andExpect(jsonPath("$.createdAt", is(testRoom.getCreatedAt().toString())));
@@ -241,7 +259,5 @@ public class RoomControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(crossTenantRequest)))
                 .andExpect(status().isUnauthorized());
     }
-
-
 
 }
