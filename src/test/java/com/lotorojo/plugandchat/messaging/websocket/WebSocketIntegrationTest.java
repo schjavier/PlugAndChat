@@ -63,9 +63,13 @@ public class WebSocketIntegrationTest {
     private Agent testAgent;
     private Credential testCredential;
     private String token;
+    private String connectUrl;
+
 
     @BeforeEach
     void setup() {
+        this.connectUrl = String.format("ws://localhost:%s/chat", port);
+
         this.stompClient = new WebSocketStompClient(new StandardWebSocketClient());
         this.stompClient.setMessageConverter(new JacksonJsonMessageConverter());
 
@@ -116,14 +120,13 @@ public class WebSocketIntegrationTest {
 
     @Test
     public void shouldConnectWhenHeadersArePresent() throws Exception {
-        String url = String.format("ws://localhost:%s/chat", port);
         CompletableFuture<StompSession> future = new CompletableFuture<>();
 
         StompHeaders stompHeaders = new StompHeaders();
         stompHeaders.add("Authorization", "Bearer " + token);
         stompHeaders.add("X-Tenant-ID", testTenant.getUuid().toString());
 
-        stompClient.connectAsync(url, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
+        stompClient.connectAsync(connectUrl, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
            @Override
            public void afterConnected(@NonNull StompSession session, @NonNull StompHeaders stompHeaders) {
                future.complete(session);
@@ -141,15 +144,14 @@ public class WebSocketIntegrationTest {
 
     @Test
     public void shouldFailToConnectWhenAuthHeadersIsNotPresent() throws Exception {
-        String url = String.format("ws://localhost:%s/chat", port);
         CompletableFuture<StompSession> future = new CompletableFuture<>();
 
         StompHeaders stompHeaders = new StompHeaders();
         stompHeaders.add("X-Tenant-ID", testTenant.getUuid().toString());
 
-        stompClient.connectAsync(url, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
+        stompClient.connectAsync(connectUrl, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
            @Override
-            public void handleTransportError(StompSession stompSession, Throwable exception) {
+            public void handleTransportError(@NonNull StompSession stompSession,@NonNull Throwable exception) {
                future.completeExceptionally(exception);
            }
         });
@@ -159,21 +161,15 @@ public class WebSocketIntegrationTest {
 
     @Test
     public void shouldConnectWhenAuthHeaderIsPresentButTenantHeaderIsNot() throws Exception {
-        String url = String.format("ws://localhost:%s/chat", port);
         CompletableFuture<StompSession> future = new CompletableFuture<>();
 
         StompHeaders stompHeaders = new StompHeaders();
         stompHeaders.add("Authorization", "Bearer " + token);
 
-        stompClient.connectAsync(url, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
+        stompClient.connectAsync(connectUrl, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
             @Override
             public void afterConnected(@NonNull StompSession session, @NonNull StompHeaders stompHeaders) {
                 future.complete(session);
-            }
-
-            @Override
-            public void handleTransportError(StompSession stompSession, Throwable exception) {
-                future.completeExceptionally(exception);
             }
         });
 
@@ -185,9 +181,46 @@ public class WebSocketIntegrationTest {
 
     }
 
-    //todo Faltan Los siguientes escenarios:
-    // - cuando el token es invalido
-    // - cuando se conecta un Guest (invitado)
-    // - aislamiento de topicos
+    @Test
+    public void shouldFailToConnectWhenTokenInvalid() throws Exception {
+        CompletableFuture<StompSession> future = new CompletableFuture<>();
+
+        StompHeaders stompHeaders = new StompHeaders();
+        stompHeaders.add("Authorization", "Bearer " + "invalidToken");
+
+        stompClient.connectAsync(connectUrl, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
+            @Override
+            public void handleTransportError(@NonNull StompSession stompSession, @NonNull Throwable exception) {
+                future.completeExceptionally(exception);
+            }
+        });
+
+        assertThrows(ExecutionException.class, () -> future.get(3, TimeUnit.SECONDS) );
+
+    }
+
+    @Test
+    public void shouldConnectSuccessfullyAsGuest() throws Exception{
+        CompletableFuture<StompSession> future = new CompletableFuture<>();
+
+        String guestEmail = "prueba@guest.com";
+        String guestToken = jwtService.generateGuestToken(guestEmail,  testTenant.getUuid());
+
+        StompHeaders stompHeaders = new StompHeaders();
+        stompHeaders.add("Authorization", "Bearer " + guestToken);
+
+        stompClient.connectAsync(connectUrl, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
+            @Override
+            public void afterConnected(@NonNull StompSession session, @NonNull StompHeaders stompHeaders) {
+                future.complete(session);
+            }
+        });
+
+        StompSession stompSession = future.get(3, TimeUnit.SECONDS);
+        assertThat(stompSession).isNotNull();
+        assertThat(stompSession.isConnected()).isTrue();
+        stompSession.disconnect();
+
+    }
 
 }
