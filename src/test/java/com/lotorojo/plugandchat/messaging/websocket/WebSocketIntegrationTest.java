@@ -6,43 +6,62 @@ import com.lotorojo.plugandchat.identity.entity.Credential;
 import com.lotorojo.plugandchat.identity.entity.UserAccount;
 import com.lotorojo.plugandchat.identity.repository.CredentialRepository;
 import com.lotorojo.plugandchat.identity.repository.UserAccountRepository;
+import com.lotorojo.plugandchat.messaging.dto.ChatMessageRequest;
+import com.lotorojo.plugandchat.messaging.dto.ChatMessageResponse;
 import com.lotorojo.plugandchat.messaging.entity.Agent;
+import com.lotorojo.plugandchat.messaging.entity.Guest;
+import com.lotorojo.plugandchat.messaging.entity.Message;
+import com.lotorojo.plugandchat.messaging.entity.Room;
 import com.lotorojo.plugandchat.messaging.repository.AgentRepository;
 import com.lotorojo.plugandchat.messaging.repository.GuestRepository;
+import com.lotorojo.plugandchat.messaging.repository.MessageRepository;
+import com.lotorojo.plugandchat.messaging.repository.RoomRepository;
 import com.lotorojo.plugandchat.tenant.entity.Tenant;
 import com.lotorojo.plugandchat.tenant.repository.TenantRepository;
+import jakarta.validation.constraints.NotNull;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.converter.JacksonJsonMessageConverter;
-import org.springframework.messaging.simp.stomp.StompCommand;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.messaging.simp.stomp.*;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.future;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 public class WebSocketIntegrationTest {
 
     @LocalServerPort
     private Integer port;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Autowired
     private TenantRepository tenantRepository;
@@ -54,6 +73,8 @@ public class WebSocketIntegrationTest {
     private GuestRepository guestRepository;
     @Autowired
     private CredentialRepository credentialRepository;
+    @Autowired
+    private MessageRepository messageRepository;
     @Autowired
     private JwtService jwtService;
 
@@ -67,6 +88,10 @@ public class WebSocketIntegrationTest {
     private Credential testCredential;
     private String token;
     private String connectUrl;
+    @Autowired
+    private RoomRepository roomRepository;
+    @Autowired
+    private HandlerExceptionResolver handlerExceptionResolver;
 
 
     @BeforeEach
@@ -263,6 +288,69 @@ public class WebSocketIntegrationTest {
         if (session.isConnected()) {
             session.disconnect();
         }
+    }
+
+    @Test
+    public void shouldPersistAndBroadcastMessageSuccessfully() throws Exception {
+
+        Guest testGuest = TestDataFactory.defaultGuest().toBuilder().uuid(null).tenant(testTenant).build();
+        guestRepository.save(testGuest);
+
+        Room testRoom = TestDataFactory.defaultRoom().toBuilder().uuid(null).tenant(testTenant).guest(testGuest).build();
+        roomRepository.save(testRoom);
+
+        String guestToken = jwtService.generateGuestToken(testGuest.getEmail(), testTenant.getUuid());
+
+        CompletableFuture<ChatMessageResponse> broadcastFuture = new CompletableFuture<>();
+
+        StompHeaders stompHeaders = new StompHeaders();
+        stompHeaders.add("Authorization", "Bearer " + guestToken);
+
+        StompSession session = stompClient.connectAsync(connectUrl, new WebSocketHttpHeaders(), stompHeaders, new StompSessionHandlerAdapter() {
+            @Override
+            public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception){
+                broadcastFuture.completeExceptionally(exception);
+            }
+        }).get(3, TimeUnit.SECONDS);
+
+        String destinationTopic = String.format("/topic/tenants/%s/rooms/%s", testTenant.getUuid(), testRoom.getUuid());
+
+        session.subscribe(destinationTopic, new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(@NonNull StompHeaders headers) {
+                return ChatMessageResponse.class;
+            }
+
+            @Override
+            public void handleFrame(@NonNull StompHeaders headers, @Nullable Object payload) {
+                broadcastFuture.complete( (ChatMessageResponse) payload);
+            }
+        });
+
+        String destinationSend = String.format("/app/tenants/%s/rooms/%s/send", testTenant.getUuid(), testRoom.getUuid());
+        ChatMessageRequest messageRequest = new ChatMessageRequest("Necesito Soporte, Por Favor");
+        session.send(destinationSend, messageRequest);
+
+        ChatMessageResponse receivedResponse = broadcastFuture.get(3, TimeUnit.SECONDS);
+        assertThat(receivedResponse).isNotNull();
+        assertThat(receivedResponse.content()).isEqualTo(messageRequest.content());
+        assertThat(receivedResponse.senderName()).isEqualTo(testGuest.getName());
+
+        List<Message> persistedMessages = messageRepository.findAll();
+        assertThat(persistedMessages).hasSize(1);
+        assertThat(persistedMessages.getFirst().getContent()).isEqualTo(messageRequest.content());
+        assertThat(persistedMessages.getFirst().getRoom().getUuid()).isEqualTo(testRoom.getUuid());
+
+        mockMvc.perform(get(String.format("/rooms/%s/messages", testRoom.getUuid()))
+                .header("Authorization", "Bearer " + guestToken)
+                .header("X-Tenant-ID", testTenant.getUuid().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].content", is(messageRequest.content())));
+
+
+        session.disconnect();
+
     }
 
 }
