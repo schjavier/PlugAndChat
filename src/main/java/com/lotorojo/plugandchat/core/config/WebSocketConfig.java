@@ -26,7 +26,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @PostConstruct
     public void init(){
-        logger.info("Configuracion cargada");
+        logger.info("Configuración cargada");
     }
 
     @Override
@@ -37,9 +37,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        //Endpoint de entrada, por ahora todos los origins son soportados, despues deberemos modificar eso
+        //Endpoint de entrada, por ahora todos los origins son soportados, después deberemos modificar eso
         registry.addEndpoint("/chat").setAllowedOrigins("*");
-
     }
 
     @Override

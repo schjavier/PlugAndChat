@@ -30,6 +30,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(HttpMethod.POST, "/rooms").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/rooms/assign", "/rooms/*/close").hasAnyRole("AGENT", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/rooms/*/messages").hasAnyRole("GUEST", "AGENT", "ADMIN")
                                 .requestMatchers("/chat/**", "/tenant", "/login").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/agents").hasRole("ADMIN")
                                         .anyRequest().authenticated()
