@@ -41,9 +41,7 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -350,6 +348,100 @@ public class WebSocketIntegrationTest {
 
 
         session.disconnect();
+
+    }
+
+    @Test
+    public void shouldIsolateConcurrentMessagesBetweenDifferentTenants() throws Exception {
+
+        Tenant tenantB = TestDataFactory.newTenantRequest().toBuilder().name("Tenant B").build();
+        tenantRepository.save(tenantB);
+
+        Guest guestA = TestDataFactory.defaultGuest().toBuilder().uuid(null).tenant(testTenant).email("guestA@mail.com").build();
+        guestRepository.save(guestA);
+        Room roomA = TestDataFactory.defaultRoom().toBuilder().uuid(null).tenant(testTenant).guest(guestA).build();
+        roomRepository.save(roomA);
+
+        Guest guestB = TestDataFactory.defaultGuest().toBuilder().uuid(null).tenant(tenantB).email("guestB@mail.com").build();
+        guestRepository.save(guestB);
+        Room roomB = TestDataFactory.defaultRoom().toBuilder().uuid(null).tenant(tenantB).guest(guestB).build();
+        roomRepository.save(roomB);
+
+        String tokenA = jwtService.generateGuestToken(guestA.getEmail(), testTenant.getUuid());
+        String tokenB = jwtService.generateGuestToken(guestB.getEmail(), tenantB.getUuid());
+
+        StompHeaders stompHeadersA = new StompHeaders();
+        stompHeadersA.add("Authorization", "Bearer " + tokenA);
+        StompSession sessionA = stompClient.connectAsync(
+                connectUrl,
+                new WebSocketHttpHeaders(),
+                stompHeadersA,
+                new StompSessionHandlerAdapter() {
+        }).get(3, TimeUnit.SECONDS);
+
+        StompHeaders stompHeadersB = new StompHeaders();
+        stompHeadersB.add("Authorization", "Bearer " + tokenB);
+        StompSession sessionB = stompClient.connectAsync(
+                connectUrl,
+                new WebSocketHttpHeaders(),
+                stompHeadersB,
+                new StompSessionHandlerAdapter() {
+        }).get(3, TimeUnit.SECONDS);
+
+        BlockingQueue<ChatMessageResponse> queueA = new LinkedBlockingQueue<>();
+        BlockingQueue<ChatMessageResponse> queueB = new LinkedBlockingQueue<>();
+
+        String topicA = String.format("/topic/tenants/%s/rooms/%s", testTenant.getUuid(), roomA.getUuid());
+        String topicB = String.format("/topic/tenants/%s/rooms/%s", tenantB.getUuid(), roomB.getUuid());
+
+        sessionA.subscribe(topicA, new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return ChatMessageResponse.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, @Nullable Object payload) {
+                queueA.add((ChatMessageResponse) payload);
+            }
+        });
+
+        sessionB.subscribe(topicB, new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return ChatMessageResponse.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, @Nullable Object payload) {
+                queueB.add((ChatMessageResponse) payload);
+            }
+        });
+
+        String sendA = String.format("/app/tenants/%s/rooms/%s/send", testTenant.getUuid(), roomA.getUuid());
+        ChatMessageRequest requestA = new ChatMessageRequest("Mensaje de Tenant A");
+        sessionA.send(sendA, requestA);
+
+        String sendB = String.format("/app/tenants/%s/rooms/%s/send", tenantB.getUuid(), roomB.getUuid());
+        ChatMessageRequest requestB = new ChatMessageRequest("Mensaje de Tenant B");
+        sessionB.send(sendB, requestB);
+
+        ChatMessageResponse receivedResponseA = queueA.poll(3, TimeUnit.SECONDS);
+        assertThat(receivedResponseA).isNotNull();
+        assertThat(receivedResponseA.content()).isEqualTo("Mensaje de Tenant A");
+
+        ChatMessageResponse receivedResponseB = queueB.poll(3, TimeUnit.SECONDS);
+        assertThat(receivedResponseB).isNotNull();
+        assertThat(receivedResponseB.content()).isEqualTo("Mensaje de Tenant B");
+
+        assertThat(queueA.isEmpty()).isTrue();
+        assertThat(queueB.isEmpty()).isTrue();
+
+        sessionA.disconnect();
+        sessionB.disconnect();
+
 
     }
 
