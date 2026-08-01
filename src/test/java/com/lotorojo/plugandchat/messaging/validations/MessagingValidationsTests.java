@@ -76,4 +76,15 @@ public class MessagingValidationsTests {
 
     }
 
+    @Test
+    public void shouldThrowExceptionWhenRoomGuestEmailAndGuestEmailMismatch(){
+
+        Room room = TestDataFactory.defaultRoom().toBuilder().uuid(UUID.randomUUID()).build();
+        Guest guest = TestDataFactory.defaultGuest().toBuilder().email("mail@guest.com").build();
+
+        assertThrows(BadCredentialsException.class, () ->
+                messagingValidations.validateRoomGuestEmailAndGuestMailMatch(room, guest.getEmail()));
+
+    }
+
 }

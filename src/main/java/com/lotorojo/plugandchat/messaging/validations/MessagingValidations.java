@@ -39,4 +39,10 @@ public class MessagingValidations {
         }
     }
 
+    public void validateRoomGuestEmailAndGuestMailMatch(Room room, String guestEmail){
+        if (!room.getGuest().getEmail().equals(guestEmail)) {
+            throw new BadCredentialsException("Guest is not the owner of the room");
+        }
+    }
+
 }
