@@ -4,10 +4,7 @@ import com.lotorojo.plugandchat.identity.entity.AuthProvider;
 import com.lotorojo.plugandchat.identity.entity.Credential;
 import com.lotorojo.plugandchat.identity.entity.Role;
 import com.lotorojo.plugandchat.identity.entity.UserAccount;
-import com.lotorojo.plugandchat.messaging.entity.Agent;
-import com.lotorojo.plugandchat.messaging.entity.Guest;
-import com.lotorojo.plugandchat.messaging.entity.Room;
-import com.lotorojo.plugandchat.messaging.entity.RoomStatus;
+import com.lotorojo.plugandchat.messaging.entity.*;
 import com.lotorojo.plugandchat.tenant.entity.Tenant;
 
 import java.time.LocalDateTime;
@@ -79,6 +76,28 @@ public class TestDataFactory {
                 .userAccount(defaultUserAccount())
                 .passwordHash("FakePasswordHash")
                 .provider(AuthProvider.DEFAULT)
+                .build();
+    }
+
+    public static Message defaultGuestMessage() {
+        return Message.builder()
+                .uuid(UUID.randomUUID())
+                .room(defaultRoom())
+                .agent(null)
+                .guest(defaultGuest())
+                .content("Test message")
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static Message defaultAgentMessage() {
+        return Message.builder()
+                .uuid(UUID.randomUUID())
+                .room(defaultRoom())
+                .agent(defaultAgent())
+                .guest(null)
+                .content("Test message")
+                .sendDate(LocalDateTime.now())
                 .build();
     }
 
