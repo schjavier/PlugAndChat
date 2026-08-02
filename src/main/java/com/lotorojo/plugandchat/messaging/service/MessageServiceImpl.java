@@ -78,14 +78,14 @@ public class MessageServiceImpl implements MessageService {
         UsernamePasswordAuthenticationToken auth = (UsernamePasswordAuthenticationToken) principal;
 
         if (isGuest(auth)) {
+
             String guestEmail = auth.getName();
-            if (!room.getGuest().getEmail().equals(guestEmail)) {
-                throw new BadCredentialsException("Guest is not the owner of the room");
-            }
+            messagingValidations.validateRoomGuestEmailAndGuestMailMatch(room, guestEmail);
+
         } else {
+
             String agentEmail = auth.getName();
             Agent agent = agentService.getByUserAccountEmail(agentEmail);
-
             messagingValidations.agentTenantMatch(room, agent);
 
         }
