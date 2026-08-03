@@ -25,7 +25,6 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final AgentService agentService;
     private final MessagingValidations messagingValidations;
-    private final MessageSourceAware messageSourceAware;
 
     public RoomServiceImpl(GuestService guestService,
                            TenantService tenantService,
@@ -37,7 +36,7 @@ public class RoomServiceImpl implements RoomService {
         this.roomRepository = roomRepository;
         this.agentService = agentService;
         this.messagingValidations = messagingValidations;
-        this.messageSourceAware = messageSourceAware;
+
     }
 
     @Override
