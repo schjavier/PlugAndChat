@@ -1,5 +1,6 @@
 package com.lotorojo.plugandchat.tenant.service;
 
+import com.lotorojo.plugandchat.core.exception.NonExistingTenantException;
 import com.lotorojo.plugandchat.identity.dto.CreateCredentialDTO;
 import com.lotorojo.plugandchat.identity.dto.CreateUserAccountDTO;
 import com.lotorojo.plugandchat.identity.entity.Credential;
@@ -83,6 +84,14 @@ public class TenantServiceImpl implements TenantService{
 
         credentialService.createCredential(credentialDTO);
 
+        return tenantMapper.toDto(tenant);
+    }
+
+    @Override
+    public TenantResponse getTenantByName(String name) {
+        Tenant tenant = tenantRepository.findByNameIgnoreCase(name).orElseThrow(
+                () -> new NonExistingTenantException("No existe el tenant con ese nombre: " + name)
+        );
         return tenantMapper.toDto(tenant);
     }
 }

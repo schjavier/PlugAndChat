@@ -3,6 +3,8 @@ package com.lotorojo.plugandchat.tenant.repository;
 import com.lotorojo.plugandchat.core.exception.NonExistingTenantException;
 import com.lotorojo.plugandchat.tenant.entity.Tenant;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
 import java.util.UUID;
 
 public interface TenantRepository extends JpaRepository<Tenant, UUID> {
@@ -12,6 +14,7 @@ public interface TenantRepository extends JpaRepository<Tenant, UUID> {
 
     }
 
+    Optional<Tenant> findByNameIgnoreCase(String name);
     boolean existsByName(String name);
 
 }
