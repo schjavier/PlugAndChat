@@ -6,6 +6,7 @@ import com.lotorojo.plugandchat.messaging.entity.RoomStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RoomRepository extends JpaRepository<Room, UUID> {
@@ -13,6 +14,8 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
         return findById(roomId).orElseThrow(
                 ()-> new NonExistingRoomException("La Sala con el id: " + roomId + "no se encuentra"));
     }
+
+    Optional<Room> getFirstByGuestEmailAndTenantUuidAndStatusNot(String guestEmail, UUID tenantUuid, RoomStatus roomStatus);
 
     List<Room> findByTenantUuidAndStatus(UUID tenantUuid, RoomStatus roomStatus);
     List<Room> findByAgentUuidAndStatus(UUID agentUuid, RoomStatus roomStatus);
