@@ -13,6 +13,6 @@ public interface TenantService {
     void deleteTenant(UUID id);
     Tenant getTenant(UUID tenant_id);
     TenantResponse provisionNewTenant(CreateTenantRequest  request);
-
+    TenantResponse getTenantByName(String name);
 
 }
