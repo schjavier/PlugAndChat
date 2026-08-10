@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,19 +26,17 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final AgentService agentService;
     private final MessagingValidations messagingValidations;
-    private final MessageSourceAware messageSourceAware;
 
     public RoomServiceImpl(GuestService guestService,
                            TenantService tenantService,
                            RoomRepository roomRepository,
                            AgentService agentService,
-                           MessagingValidations messagingValidations, MessageSourceAware messageSourceAware) {
+                           MessagingValidations messagingValidations) {
         this.guestService = guestService;
         this.tenantService = tenantService;
         this.roomRepository = roomRepository;
         this.agentService = agentService;
         this.messagingValidations = messagingValidations;
-        this.messageSourceAware = messageSourceAware;
     }
 
     @Override
@@ -46,6 +45,16 @@ public class RoomServiceImpl implements RoomService {
 
         UUID currentTenantUUID = TenantContext.getCurrentTenant();
         Tenant currentTenant = tenantService.getTenant(currentTenantUUID);
+
+        Optional<Room> activeRoom = roomRepository.getFirstByGuestEmailAndTenantUuidAndStatusNot(
+                createRoomRequest.guestEmail(),
+                currentTenantUUID,
+                RoomStatus.CLOSED
+        );
+
+        if (activeRoom.isPresent()) {
+            return activeRoom.get();
+        }
 
         Guest guest = guestService.getOrCreateGuest(createRoomRequest.guestName(), createRoomRequest.guestEmail(),  currentTenant);
 
