@@ -18,6 +18,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -32,7 +34,7 @@ public class SecurityConfig {
                         auth.requestMatchers(HttpMethod.POST, "/rooms").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/rooms/assign", "/rooms/*/close").hasAnyRole("AGENT", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/rooms/*/messages").hasAnyRole("GUEST", "AGENT", "ADMIN")
-                                .requestMatchers("/chat/**", "/tenant", "/login").permitAll()
+                                .requestMatchers("/chat/**", "/tenant","/tenant/lookup", "/login", "/login/admin").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/agents").hasRole("ADMIN")
                                         .anyRequest().authenticated()
                 );
@@ -65,9 +67,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("*");
-        configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
+
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuration.setAllowedMethods(List.of("GET", "PUT", "POST", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Tenant-ID"));
+
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
