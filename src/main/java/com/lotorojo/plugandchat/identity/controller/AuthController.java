@@ -60,7 +60,7 @@ public class AuthController {
 
     }
 
-    @PostMapping("logout")
+    @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("auth_token", "")
                 .httpOnly(true)
