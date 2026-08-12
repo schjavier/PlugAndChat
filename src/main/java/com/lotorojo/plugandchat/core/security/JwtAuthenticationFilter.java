@@ -3,6 +3,7 @@ package com.lotorojo.plugandchat.core.security;
 import com.lotorojo.plugandchat.core.tenant.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,7 +17,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -57,12 +60,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
         private void processAuthentication(HttpServletRequest request){
+            Optional<String> token = getTokenFromHeader(request)
+                    .or( () -> getTokenFromCookie(request));
 
-            String authHeader = request.getHeader("Authorization");
-
-            if(authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                handleJwtAuthentication(token);
+            if (token.isPresent()){
+                handleJwtAuthentication(token.get());
                 return;
             }
 
@@ -71,6 +73,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 TenantContext.setCurrentTenant(UUID.fromString(tenantHeader));
             }
         }
+
+        private Optional<String> getTokenFromHeader(HttpServletRequest request){
+
+            return Optional.ofNullable(request.getHeader("Authorization"))
+                    .filter(header -> header.startsWith("Bearer "))
+                    .map(header -> header.substring(7))
+                    .filter(token -> !token.isBlank());
+        }
+
+        private Optional<String> getTokenFromCookie(HttpServletRequest request){
+
+            return Optional.ofNullable(request.getCookies())
+                    .stream()
+                    .flatMap(Arrays::stream)
+                    .filter((cookie) -> "auth_token".equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .filter(token -> token != null && !token.isBlank())
+                    .findFirst();
+        }
+
 
         private void handleJwtAuthentication(String token){
             UUID tenantId = jwtService.extractTenantId(token);
