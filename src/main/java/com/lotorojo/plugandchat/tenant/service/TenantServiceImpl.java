@@ -90,7 +90,7 @@ public class TenantServiceImpl implements TenantService{
     @Override
     public TenantResponse getTenantByName(String name) {
         Tenant tenant = tenantRepository.findByNameIgnoreCase(name).orElseThrow(
-                () -> new NonExistingTenantException("No existe el tenant con ese name: " + name)
+                () -> new NonExistingTenantException("No existe el tenant con ese nombre: " + name)
         );
         return tenantMapper.toDto(tenant);
     }
