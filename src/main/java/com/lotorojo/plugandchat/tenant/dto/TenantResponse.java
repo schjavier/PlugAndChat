@@ -2,4 +2,4 @@ package com.lotorojo.plugandchat.tenant.dto;
 
 import java.util.UUID;
 
-public record TenantResponse(UUID id, String nombre, String apiKey){}
+public record TenantResponse(UUID uuid, String name, String apiKey){}

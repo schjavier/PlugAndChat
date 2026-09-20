@@ -13,7 +13,7 @@ public class TenantMapper {
     }
 
     public Tenant toEntity(TenantResponse tenantResponse){
-        return new Tenant(tenantResponse.id(), tenantResponse.nombre(), tenantResponse.apiKey());
+        return new Tenant(tenantResponse.uuid(), tenantResponse.name(), tenantResponse.apiKey());
     }
 
 }
