@@ -1,5 +1,6 @@
 package com.lotorojo.plugandchat.messaging.service;
 
+import com.lotorojo.plugandchat.core.exception.NonExistingTenantException;
 import com.lotorojo.plugandchat.core.tenant.TenantContext;
 import com.lotorojo.plugandchat.messaging.dto.AssignAgentRequest;
 import com.lotorojo.plugandchat.messaging.dto.CreateRoomRequest;
@@ -15,6 +16,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -98,4 +100,16 @@ public class RoomServiceImpl implements RoomService {
     public Room getRoomById(UUID roomId) {
         return roomRepository.getRoomOrThrow(roomId);
     }
+
+    @Override
+    public List<Room> getRoomsByTenant() {
+        UUID tenantId = TenantContext.getCurrentTenant();
+        if(tenantId == null){
+            throw new NonExistingTenantException("Tenant Id esta vacío");
+
+        }
+        return roomRepository.findByTenantUuidOrderByCreatedAtDesc(tenantId);
+    }
+
+
 }
