@@ -32,11 +32,13 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(HttpMethod.POST, "/rooms").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/rooms").hasAnyRole("AGENT", "ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/rooms/assign", "/rooms/*/close").hasAnyRole("AGENT", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/rooms/*/messages").hasAnyRole("GUEST", "AGENT", "ADMIN")
                                 .requestMatchers("/chat/**", "/tenant","/tenant/lookup", "/login", "/login/admin", "/logout").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/agents").hasRole("ADMIN")
-                                        .anyRequest().authenticated()
+                                .requestMatchers(HttpMethod.POST, "/agents").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/agents/active").hasRole("ADMIN")
+                                .anyRequest().authenticated()
                 );
 
 

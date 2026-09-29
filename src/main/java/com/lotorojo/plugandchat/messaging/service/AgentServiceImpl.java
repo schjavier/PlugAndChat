@@ -18,6 +18,7 @@ import com.lotorojo.plugandchat.messaging.repository.AgentRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+
 import java.util.UUID;
 
 @Service
@@ -83,6 +84,11 @@ public class AgentServiceImpl implements AgentService {
         return agentRepository.findByUserAccountEmail(email).orElseThrow(
                 () -> new BadCredentialsException("Agent Not Found")
         );
+    }
+
+    @Override
+    public Integer countActiveAgentsByTenantUuid(UUID tenantUuid) {
+        return userAccountService.countUserAccountsByTenantUuidAndRole(tenantUuid, Role.AGENT);
     }
 }
 

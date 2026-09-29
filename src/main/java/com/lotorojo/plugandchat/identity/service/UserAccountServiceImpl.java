@@ -1,6 +1,7 @@
 package com.lotorojo.plugandchat.identity.service;
 
 import com.lotorojo.plugandchat.identity.dto.CreateUserAccountDTO;
+import com.lotorojo.plugandchat.identity.entity.Role;
 import com.lotorojo.plugandchat.identity.entity.UserAccount;
 import com.lotorojo.plugandchat.identity.mapper.UserAccountMapper;
 import com.lotorojo.plugandchat.identity.repository.UserAccountRepository;
@@ -10,6 +11,7 @@ import com.lotorojo.plugandchat.tenant.service.TenantService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -41,5 +43,10 @@ public class UserAccountServiceImpl implements UserAccountService{
     @Override
     public UserAccount getUserAccount(UUID accountId) {
         return userAccountRepository.getUserAccountOrThrow(accountId);
+    }
+
+    @Override
+    public Integer countUserAccountsByTenantUuidAndRole(UUID tenantUuid, Role role) {
+        return userAccountRepository.countByTenantUuidAndRoleAndIsLockedFalse(tenantUuid, role);
     }
 }

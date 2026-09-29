@@ -1,9 +1,11 @@
 package com.lotorojo.plugandchat.identity.repository;
 
 import com.lotorojo.plugandchat.core.exception.NoUserAccountFoundException;
+import com.lotorojo.plugandchat.identity.entity.Role;
 import com.lotorojo.plugandchat.identity.entity.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,7 +17,7 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID> 
     }
 
     Optional<UserAccount> findByEmailAndUuid(String email, UUID tenanUuid);
-
+    Integer countByTenantUuidAndRoleAndIsLockedFalse(UUID tenanUuid, Role role);
     boolean existsByEmailAndTenantUuid(String email, UUID tenantUuid);
 }
 

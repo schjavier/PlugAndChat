@@ -4,6 +4,7 @@ import com.lotorojo.plugandchat.messaging.dto.AssignAgentRequest;
 import com.lotorojo.plugandchat.messaging.dto.CreateRoomRequest;
 import com.lotorojo.plugandchat.messaging.entity.Room;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface RoomService {
@@ -12,4 +13,5 @@ public interface RoomService {
     Room assignAgentToRoom(AssignAgentRequest assignAgentRequest);
     Room closeRoom(UUID roomId);
     Room getRoomById(UUID roomId);
+    List<Room> getRoomsByTenant();
 }

@@ -71,4 +71,12 @@ public class RoomController {
         return ResponseEntity.ok(chatMessageResponses);
     }
 
+    @GetMapping
+    public ResponseEntity<List<RoomResponse>> getRooms(){
+        List<Room> rooms = roomService.getRoomsByTenant();
+        List<RoomResponse> roomResponses = rooms.stream()
+                .map(roomMapper::toDto)
+                .toList();
+        return ResponseEntity.ok(roomResponses);
+    }
 }

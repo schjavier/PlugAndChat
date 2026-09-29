@@ -19,5 +19,5 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
 
     List<Room> findByTenantUuidAndStatus(UUID tenantUuid, RoomStatus roomStatus);
     List<Room> findByAgentUuidAndStatus(UUID agentUuid, RoomStatus roomStatus);
-
+    List<Room> findByTenantUuidOrderByCreatedAtDesc(UUID tenantUuid);
 }
