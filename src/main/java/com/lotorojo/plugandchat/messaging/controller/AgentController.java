@@ -29,6 +29,13 @@ public class AgentController {
         return new ResponseEntity<>(agentResponse, HttpStatus.CREATED);
     }
 
+    @GetMapping("/agents")
+    public ResponseEntity<List<AgentResponse>> getAllAgents() {
+        UUID tenantUuid = TenantContext.getCurrentTenant();
+        List<AgentResponse> agentResponses = agentService.getAgentsByTenantUuid(tenantUuid);
+        return ResponseEntity.ok(agentResponses);
+    }
+
     @GetMapping("/agents/active")
     public ResponseEntity<Integer> getActiveAgents() {
         UUID tenantUuid = TenantContext.getCurrentTenant();

@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -71,7 +72,7 @@ public class AgentServiceImpl implements AgentService {
         Agent agent = new Agent(userAccount, request.department(), request.displayName());
         Agent savedAgent = agentRepository.save(agent);
 
-        return agentMapper.toDto(savedAgent);
+        return AgentMapper.toDto(savedAgent);
     }
 
     @Override
@@ -90,5 +91,10 @@ public class AgentServiceImpl implements AgentService {
     public Integer countActiveAgentsByTenantUuid(UUID tenantUuid) {
         return userAccountService.countUserAccountsByTenantUuidAndRole(tenantUuid, Role.AGENT);
     }
-}
 
+    @Override
+    public List<AgentResponse> getAgentsByTenantUuid(UUID tenantUuid) {
+        List<Agent> agentsList = agentRepository.findAllByUserAccountTenantUuid(tenantUuid);
+        return agentsList.stream().map(AgentMapper::toDto).toList();
+    }
+}

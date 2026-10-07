@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AgentMapper {
 
-    public AgentResponse toDto(@NotNull Agent agent) {
+    public static AgentResponse toDto(@NotNull Agent agent) {
 
         return new AgentResponse(
                 agent.getUuid(),
