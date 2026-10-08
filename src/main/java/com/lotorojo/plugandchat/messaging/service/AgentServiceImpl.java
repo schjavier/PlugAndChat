@@ -72,7 +72,7 @@ public class AgentServiceImpl implements AgentService {
         Agent agent = new Agent(userAccount, request.department(), request.displayName());
         Agent savedAgent = agentRepository.save(agent);
 
-        return AgentMapper.toDto(savedAgent);
+        return agentMapper.toDto(savedAgent);
     }
 
     @Override
@@ -95,6 +95,6 @@ public class AgentServiceImpl implements AgentService {
     @Override
     public List<AgentResponse> getAgentsByTenantUuid(UUID tenantUuid) {
         List<Agent> agentsList = agentRepository.findAllByUserAccountTenantUuid(tenantUuid);
-        return agentsList.stream().map(AgentMapper::toDto).toList();
+        return agentsList.stream().map(agentMapper::toDto).toList();
     }
 }
