@@ -4,6 +4,9 @@ import com.lotorojo.plugandchat.core.tenant.TenantContext;
 import com.lotorojo.plugandchat.messaging.dto.AgentResponse;
 import com.lotorojo.plugandchat.messaging.dto.RegisterAgentRequest;
 import com.lotorojo.plugandchat.messaging.service.AgentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,9 +33,9 @@ public class AgentController {
     }
 
     @GetMapping("/agents")
-    public ResponseEntity<List<AgentResponse>> getAllAgents() {
+    public ResponseEntity<Page<AgentResponse>> getAllAgents(@PageableDefault(size = 5, sort = "displayName") Pageable pageable) {
         UUID tenantUuid = TenantContext.getCurrentTenant();
-        List<AgentResponse> agentResponses = agentService.getAgentsByTenantUuid(tenantUuid);
+        Page<AgentResponse> agentResponses = agentService.getAgentsByTenantUuid(tenantUuid, pageable);
         return ResponseEntity.ok(agentResponses);
     }
 

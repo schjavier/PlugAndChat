@@ -2,7 +2,10 @@ package com.lotorojo.plugandchat.messaging.repository;
 
 import com.lotorojo.plugandchat.core.exception.NoAgentFoundException;
 import com.lotorojo.plugandchat.messaging.entity.Agent;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -16,5 +19,5 @@ public interface AgentRepository extends JpaRepository<Agent, UUID> {
 
     Optional<Agent> findByUserAccountUuid(UUID userAccountUuid);
     Optional<Agent> findByUserAccountEmail(String email);
-    List<Agent> findAllByUserAccountTenantUuid(UUID tenantUuid);
+    Page<Agent> findAllByUserAccountTenantUuid(UUID tenantUuid, Pageable pageable);
 }
