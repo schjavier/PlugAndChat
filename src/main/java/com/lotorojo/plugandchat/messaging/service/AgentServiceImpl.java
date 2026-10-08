@@ -16,9 +16,12 @@ import com.lotorojo.plugandchat.messaging.entity.Agent;
 import com.lotorojo.plugandchat.messaging.mapper.AgentMapper;
 import com.lotorojo.plugandchat.messaging.repository.AgentRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -90,5 +93,10 @@ public class AgentServiceImpl implements AgentService {
     public Integer countActiveAgentsByTenantUuid(UUID tenantUuid) {
         return userAccountService.countUserAccountsByTenantUuidAndRole(tenantUuid, Role.AGENT);
     }
-}
 
+    @Override
+    public Page<AgentResponse> getAgentsByTenantUuid(UUID tenantUuid, Pageable pageable) {
+        Page<Agent> agentsList = agentRepository.findAllByUserAccountTenantUuid(tenantUuid, pageable);
+        return agentsList.map(agentMapper::toDto);
+    }
+}

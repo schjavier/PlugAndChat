@@ -37,7 +37,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/rooms/*/messages").hasAnyRole("GUEST", "AGENT", "ADMIN")
                                 .requestMatchers("/chat/**", "/tenant","/tenant/lookup", "/login", "/login/admin", "/logout").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/agents").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/agents/active").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/agents", "/agents/active").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 );
 

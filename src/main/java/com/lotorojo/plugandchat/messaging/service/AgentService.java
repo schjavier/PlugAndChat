@@ -3,7 +3,8 @@ package com.lotorojo.plugandchat.messaging.service;
 import com.lotorojo.plugandchat.messaging.dto.AgentResponse;
 import com.lotorojo.plugandchat.messaging.dto.RegisterAgentRequest;
 import com.lotorojo.plugandchat.messaging.entity.Agent;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 public interface AgentService {
@@ -12,5 +13,6 @@ public interface AgentService {
     Agent getAgent(UUID agentId);
     Agent getByUserAccountEmail(String email);
     Integer countActiveAgentsByTenantUuid(UUID tenantUuid);
+    Page<AgentResponse> getAgentsByTenantUuid(UUID tenantUuid, Pageable pageable);
 }
 
